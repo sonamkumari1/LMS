@@ -16,7 +16,7 @@ const userSchema= new mongoose.Schema({
     role:{
         type:String,
         enum:["instructor","student"],
-        default:student
+        default:"student"
     },
     //for relation as like foreign key
     enrolledCourses:[
