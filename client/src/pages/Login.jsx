@@ -14,9 +14,10 @@ import {
   useLoginUserMutation,
   useRegisterUserMutation,
 } from "@/features/api/authApi";
-import { toast } from "@/hooks/use-toast";
+
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({
@@ -49,8 +50,6 @@ const Login = () => {
     },
   ] = useLoginUserMutation();
 
-
-
   // Handles input changes
   const changeInputHandler = (e, type) => {
     const { name, value } = e.target;
@@ -69,31 +68,30 @@ const Login = () => {
     await action(inputData);
   };
 
-  useEffect(()=>{
-    if(registerIsSuccess && registerData){
-      toast.success(registerData.message || "signup successfull.")
-    }
-    if(registerError){
-      toast.error(registerData.data.message || "Signup Failed")
-    }
-    if(loginIsSuccess && loginData){
-      toast.success(loginData.message || "login successfully")
+  useEffect(() => {
+    if (registerIsSuccess && registerData) {
+      toast.success(registerData.message || "Signup successful.");
+    } else if (registerError) {
+      const errorMessage = registerError?.data?.message || "Signup failed.";
+      toast.error(errorMessage);
     }
 
-    if(loginError){
-      toast.error(loginData.data.message || "login Failed")
+    if (loginIsSuccess && loginData) {
+      toast.success(loginData.message || "Login successful.");
+    } else if (loginError) {
+      const errorMessage = loginError?.data?.message || "Login failed.";
+      toast.error(errorMessage);
     }
   }, [
-    loginIsLoading,
-    registerIsLoading,
-    loginData,
+    registerIsSuccess,
+    registerError,
     registerData,
+    loginIsSuccess,
     loginError,
-    registerError
-  ])
-
+    loginData,
+  ]);
   return (
-    <div className="flex items-center w-full justify-center">
+    <div className="flex items-center w-full justify-center mt-20">
       <Tabs defaultValue="signup" className="w-[400px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">Signup</TabsTrigger>

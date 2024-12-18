@@ -78,13 +78,16 @@ export const login = async (req, res) => {
       });
     }
 
-    generateToken(res, user, `welcome back ${user.name}`)
+    // Generate token and set in cookies
+    generateToken(res, user);
 
-    // Successful login
+    // Send the final response
     return res.status(200).json({
       success: true,
-      message: "Logged in successfully",
+      message: `Welcome back ${user.name}`,
+      user,
     });
+
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({
@@ -93,3 +96,4 @@ export const login = async (req, res) => {
     });
   }
 };
+
