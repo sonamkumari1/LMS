@@ -43,8 +43,35 @@ export const authApi = createApi({
         }
       },
     }),
+    logoutUser:builder.mutation({
+      query: () => ({
+        url: "logout",
+        method: "GET",
+      }),
+    }),
+    loadUser: builder.query({
+      query: () => ({
+        url: "profile", // Endpoint for user profile
+        method: "GET",
+      }),
+    }),
+
+    updateUser: builder.mutation({
+      query: (formData) => ({
+        url: "profile/update", // Endpoint for updating user profile
+        method: "PUT",
+        body: formData,
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
 // Export mutation hooks
-export const { useRegisterUserMutation, useLoginUserMutation } = authApi;
+export const {
+  useRegisterUserMutation,
+  useLoginUserMutation,
+  useLogoutUserMutation,
+  useLoadUserQuery,
+  useUpdateUserMutation,
+} = authApi;
