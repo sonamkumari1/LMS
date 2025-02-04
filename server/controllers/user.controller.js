@@ -113,35 +113,34 @@ export const logout = (req, res) => {
   }
 };
 
-
-export const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req,res) => {
   try {
-    const userId = req.id;
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    return res.status(200).json({
-      success: true,
-      user,
-    });
+      const userId = req.id;
+      const user = await User.findById(userId).select("-password").populate("enrolledCourses");
+      if(!user){
+          return res.status(404).json({
+              message:"Profile not found",
+              success:false
+          })
+      }
+      return res.status(200).json({
+          success:true,
+          user
+      })
   } catch (error) {
-    console.error("Get user profile error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to get user profile",
-    });
+      console.log(error);
+      return res.status(500).json({
+          success:false,
+          message:"Failed to load user"
+      })
   }
-};
+}
 
 export const updateProfile = async (req, res) => {
   try {
-    const userId = req.id; // Assuming `req.id` contains the authenticated user's ID
+    const userId = req.id;
     const { name } = req.body;
-    const profilePic = req.file; // Assuming `profilePic` is uploaded using a middleware like `multer`
+    const profilePic = req.file;
 
     if (!profilePic) {
       return res.status(400).json({
@@ -158,36 +157,39 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // If an old photo URL exists, delete it from Cloudinary
     if (user.photoUrl) {
-      const publicId = user.photoUrl.split("/").pop().split(".")[0]; // Extract public ID
-      await deleteMediaFromCloudinary(publicId); // Ensure this function is properly defined
+      const publicId = user.photoUrl.split("/").pop().split(".")[0];
+      await deleteMediaFromCloudinary(publicId);
     }
 
-    // Upload the new profile picture to Cloudinary
-    const cloudResponse = await uploadMedia(profilePic.path); // Ensure `uploadMedia` uploads correctly
+    const cloudResponse = await uploadMedia(profilePic.path);
+    if (!cloudResponse || !cloudResponse.secure_url) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to upload profile picture",
+      });
+    }
     const photoUrl = cloudResponse.secure_url;
 
-    // Prepare and update user data
     const updatedData = {
-      name: name || user.name, // Retain the current name if none provided
+      name: name || user.name,
       photoUrl,
     };
+
     const updatedUser = await User.findByIdAndUpdate(userId, updatedData, {
       new: true,
-    }).select("-password"); // Exclude password field from the response
+    }).select("-password");
 
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       user: updatedUser,
-
     });
   } catch (error) {
-    console.error("Update profile error:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to update profile",
+      error: error.message,
     });
   }
 };
